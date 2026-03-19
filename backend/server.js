@@ -10,13 +10,19 @@ app.use(cors())
 app.use(express.json())
 
 // Conexão com o banco de dados PostgreSQL
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER || 'etluser',
-  password: process.env.DB_PASS || 'etlpass',
-  database: process.env.DB_NAME || 'etldb',
-})
+// Em produção (Railway) usa DATABASE_URL; em desenvolvimento usa variáveis individuais
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+  : new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      user: process.env.DB_USER || 'etluser',
+      password: process.env.DB_PASS || 'etlpass',
+      database: process.env.DB_NAME || 'etldb',
+    })
 
 // Cria as tabelas se não existirem
 async function initDB() {
